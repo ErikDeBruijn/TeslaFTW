@@ -17,8 +17,10 @@ The functions are ordered so that the menu's at the top are the things I use mos
 
 Installation
 ========
- - Ensure that you're running pebble firmware v2.
- - Download the PBW file to your paired phone [here](https://github.com/ErikDeBruijn/TeslaFTW/blob/master/build/TeslaFTW.pbw?raw=true).
+ - Android: Ensure you have the latest Pebble App for Android, at least 2.0 Beta8. You can (https://www.dropbox.com/s/fktcb3nuadqbzpp/PebbleApp-2.0-BETA8.apk)[download it from here].
+ - Ensure that you're running firmware v2 on your pebble.
+ - iOS: Use the Pebble App store to find Tesla FTW.
+ - If the above doesn't work, use the PBW: Download the PBW file to your paired phone [here](https://github.com/ErikDeBruijn/TeslaFTW/blob/master/build/TeslaFTW.pbw?raw=true).
  - Install onto your device with the Pebble App on your phone.
 
 
