@@ -106,7 +106,7 @@ static void menu_select_callback(int section, int index, void *ctx) {
   if (dict_write_tuplet(iter, &value) != DICT_OK) {
     return;
   }
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "Sent msg: %d", index);
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "Sent msg: %d", (section * 10) + index);
   app_message_outbox_send();
   // Here we just change the subtitle to a literal string
   //first_menu_items[index].subtitle = "You've hit select here!";

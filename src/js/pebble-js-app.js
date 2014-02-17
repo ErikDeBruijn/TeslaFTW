@@ -7,6 +7,7 @@ var retries = 3;
 var passiveRequest = true;
 var chargeData;
 var climateData;
+var settingStore = {};
 
 // Default settings
 var settings = {
@@ -17,10 +18,17 @@ var settings = {
 };
 Pebble.addEventListener("ready",
     function(e) {
-        console.log("==== TESLA CTL v9 =====");
-        console.log("Username: "+username + ", password: "+password + ", debug: "+debug);
+        console.log("==== TESLA CTL v13 =====");
+        console.log("Username: "+username + ", password: "+password + ", debug: "+debug + "VehicleID: "+vehicleID);
 		chargeData = null;
 		climateData = null;
+		settingStore = JSON.parse(localStorage.getItem('settings')) || {};
+		settings.currency_unit = settingStore.unitOfCurrency || "EUR";
+		settings.distance_unit = settingStore.unitOfDistance || "km";
+		settings.kwh_cost = (0+settingStore.kwhCost) || 0.21;
+		settings.distance_factor = (settings.distance_unit == 'km' ? 1.60934 : 1);
+        console.log("Settings:" + JSON.stringify(settings));
+
         setTimeout(function(){
 			getClimateState(['getChargedState',"disablePassiveRequests"]);// passively get charged state (skip popup)
         },1000);
@@ -124,6 +132,8 @@ function performActions(actions) {
 			return performActions(actions);
 		}
 	}
+	if(action == 'doLogin')
+		doLogin(actions);
 	if(action == 'getVehicles')
 		getVehicles(actions);
 	if(action == 'getChargedState')
@@ -392,8 +402,8 @@ function connectFailHandler(e) {
 }
 
 function showConfiguration(e) {
-	console.log("Configuration menu....");
-	Pebble.openURL('https://dl.dropboxusercontent.com/u/7326702/Do-not-delete/pebbleconf1.html?name='+username);
+	console.log("Open configuration menu URL...");
+	Pebble.openURL('https://dl.dropboxusercontent.com/u/7326702/Do-not-delete/pebbleconf1.html');
 	// window.location.href = "pebblejs://close#success";
 }
 function webviewclosed(e) {
@@ -406,7 +416,7 @@ function webviewclosed(e) {
     localStorage.setItem('password', o.password);
     localStorage.setItem('APIURL', o.APIURL);
     localStorage.setItem('debug', o.debug);
-    localStorage.setItem('settings', o);
+    localStorage.setItem('settings', e.response);
 }
 
 Pebble.addEventListener("appmessage",appmessage);
