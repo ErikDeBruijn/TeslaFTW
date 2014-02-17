@@ -5,7 +5,7 @@ Pebble App to control your Tesla Model S/X or hopefully soon the model E (econom
 
 Some screenshots:
 
-![Screenshots](https://raw.github.com/ErikDeBruijn/TeslaFTW/master/resources/images/Pebble-Screenshots.png)
+![Screenshots](https://raw.github.com/ErikDeBruijn/TeslaFTW/master/Pebble-Screenshots.png)
 
 It uses the Tesla API. To control your Tesla. It will allow you to do things like the following:
 
