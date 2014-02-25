@@ -1,15 +1,13 @@
 var username = localStorage.getItem('username') || "";
 var password = localStorage.getItem('password') || "";
 var debug = localStorage.getItem('debug') || true;
-var portal = localStorage.getItem('APIURL') || 'https://portal.vn.teslamotors.com';
-var vehicleID = localStorage.getItem('vehicleID');
+var portal = 'https://portal.vn.teslamotors.com';
+var vehicleID = localStorage.getItem('vehicleID') || null;
 var retries = 3;
 var passiveRequest = true;
 var chargeData;
 var climateData;
-var settingStore = {};
 
-// Default settings
 var settings = {
 	kwh_cost: 0.21,
 	currency_unit: "EUR",
@@ -18,19 +16,22 @@ var settings = {
 };
 Pebble.addEventListener("ready",
     function(e) {
-        console.log("==== TESLA CTL v13 =====");
-        console.log("Username: "+username + ", password: "+password + ", debug: "+debug + "VehicleID: "+vehicleID);
+        console.log("==== TESLA CTL9.1 =====");
+        console.log("Username: "+username + ", password: "+password + ", vehicleID: "+vehicleID + ", debug: "+debug);
 		chargeData = null;
 		climateData = null;
-		settingStore = JSON.parse(localStorage.getItem('settings')) || {};
-		settings.currency_unit = settingStore.unitOfCurrency || "EUR";
-		settings.distance_unit = settingStore.unitOfDistance || "km";
-		settings.kwh_cost = (0+settingStore.kwhCost) || 0.21;
-		settings.distance_factor = (settings.distance_unit == 'km' ? 1.60934 : 1);
-        console.log("Settings:" + JSON.stringify(settings));
-
+		
         setTimeout(function(){
-			getClimateState(['getChargedState',"disablePassiveRequests"]);// passively get charged state (skip popup)
+            if(username === "") {
+                Pebble.showSimpleNotificationOnPebble("About Tesla FTW!", "Hi, use the phone app to go to \"Settings\" and enter your Tesla Login.\n\nEnjoy, Erik");
+                return false;
+            }
+            if(vehicleID === null) {
+                console.log("Need a vehicleID...");
+                doLogin(['getVehicles','getClimateState','getChargedState','disablePassiveRequests']);
+            } else {
+				getClimateState(['getChargedState',"disablePassiveRequests"]);// passively get charged state (skip popup)
+            }
         },1000);
     }
 );
@@ -88,7 +89,7 @@ function appmessage(e) {
 				break;
 			case 23:
 				console.log("MENU2.3: Reconnect vid="+ vehicleID);
-				performActions(['doLogin','getVehicles']);
+				performActions(['resetdata','doLogin','getVehicles']);
 				// Pebble.showSimpleNotificationOnPebble("Connection to car", "Connecting...");
 				// setTimeout(function(){Pebble.showSimpleNotificationOnPebble("Connection to car", "Still connecting...");},3000);
 				break;
@@ -132,8 +133,6 @@ function performActions(actions) {
 			return performActions(actions);
 		}
 	}
-	if(action == 'doLogin')
-		doLogin(actions);
 	if(action == 'getVehicles')
 		getVehicles(actions);
 	if(action == 'getChargedState')
@@ -147,9 +146,12 @@ function performActions(actions) {
 		passiveRequest = true;
 	}
 	if(action == 'resetdata') {
+		console.log("Resetting vars...");
 		passiveRequest = true;
 		chargeData = null;
 		climateData = null;
+		vehicleID = null;
+		localStorage.removeItem('vehicleID');
 	}
 
 	if(typeof action == 'object' && action.cmd) {
@@ -161,10 +163,25 @@ function performActions(actions) {
 function doLogin(actions) {
 	console.log("doLogin(): Attempting to receive a token");
 	var data = new FormData();
-	data.append('user_session[email]', username);
-	data.append('user_session[password]', password);
+	data.append('user_session[email]', username.trim());
+	data.append('user_session[password]', password.trim());
 	var req = new XMLHttpRequest();
-	req.open('POST', portal +'/login', true);
+	req.TimeOut = 2000;
+	req.open('POST', portal +'/login');
+	req.onerror = function(e) {
+		if (req.readyState == 4) {
+			console.log("Response (status: "+req.status+"): " + this.responseText);
+			if(req.status == 200) {
+				Pebble.sendAppMessage({"99":"Success!!"});
+				performActions(actions);
+			} else {
+				console.log("Failed. "+ req.status.toString()+ " "+e.error+" " +req.error);
+				Pebble.sendAppMessage({"99":"Failed!!"});
+			}
+		}
+		Pebble.showSimpleNotificationOnPebble("Connection problem", "Could not verify username and password at "+ portal + '/login. Invalid HTTPS response.');
+		console.log("req.onerror finished...");
+	};
 	req.onload = function(e) {
 		if (req.readyState == 4) {
 			console.log("Response (status: "+req.status+"): " + this.responseText);
@@ -172,7 +189,7 @@ function doLogin(actions) {
 				Pebble.sendAppMessage({"99":"Success!!"});
 				performActions(actions);
 			} else {
-				console.log("Failed.\n");
+				console.log("Failed. "+ req.status.toString()+ " "+e.error+" " +req.error);
 				Pebble.sendAppMessage({"99":"Failed!!"});
 			}
 		}
@@ -402,21 +419,19 @@ function connectFailHandler(e) {
 }
 
 function showConfiguration(e) {
-	console.log("Open configuration menu URL...");
-	Pebble.openURL('https://dl.dropboxusercontent.com/u/7326702/Do-not-delete/pebbleconf1.html');
+	console.log("Configuration menu....");
+	Pebble.openURL('https://dl.dropboxusercontent.com/u/7326702/Do-not-delete/pebbleconf1.html?name='+username);
 	// window.location.href = "pebblejs://close#success";
 }
 function webviewclosed(e) {
     console.log("Configuration window returned: " + e.response);
     var o = JSON.parse(e.response);
 
-    localStorage.setItem('username', o.username);
     console.log("Configuration set e.response.username to: " + o.username);
-    console.log("Configuration retrieved username is: " + localStorage.getItem('username'));
+    localStorage.setItem('username', o.username);
     localStorage.setItem('password', o.password);
-    localStorage.setItem('APIURL', o.APIURL);
     localStorage.setItem('debug', o.debug);
-    localStorage.setItem('settings', e.response);
+    localStorage.setItem('settings', o);
 }
 
 Pebble.addEventListener("appmessage",appmessage);

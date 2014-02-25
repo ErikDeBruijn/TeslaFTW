@@ -23,7 +23,7 @@ Installation
 ============
 
 The easiest way is to use the new Pebble Store, from the Pebble App. It needs to be the latest version. When using Android, the store might still be in beta.
- - Android: Ensure you have the latest Pebble App for Android or at least 2.0 Beta 8. You can [download it from here](https://www.dropbox.com/s/fktcb3nuadqbzpp/PebbleApp-2.0-BETA8.apk).
+ - Android: Ensure you have the latest Pebble App for Android or at least 2.0 Beta 10. You can [download it from here](https://www.dropbox.com/s/4ojeh4z42rdoj9i/PebbleApp-2.0-BETA10.apk).
  - Ensure that you're running firmware v2 on your pebble.
  - iOS: Use the Pebble App store to find Tesla FTW.
  - If the above doesn't work, use the PBW: Download the PBW file to your paired phone [here](https://github.com/ErikDeBruijn/TeslaFTW/blob/master/build/TeslaFTW.pbw?raw=true).
@@ -38,9 +38,10 @@ Using this application is entirely at your own risk. No guarantee is given I use
 Compatibility
 =============
 
-Note: This watchapp is for Pebble firmware 2.0.
+ - Pebble firmware 2.0.1.
+ - Android: PebbleApp 2.0 Beta 10.
 
-The app doesn't require a companion app on your Android/iOS device.
+The app doesn't require a companion app on your Android/iOS device, but needs a recent PebbleApp.
 
 Development
 ===========
