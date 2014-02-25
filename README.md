@@ -3,6 +3,10 @@ TeslaFTW
 
 Pebble App to control your Tesla Model S/X or hopefully soon the model E (economy).
 
+Click below for a demo video:
+[![Alt text for your video](http://img.youtube.com/vi/GXDTFnsRmms/0.jpg)](http://youtu.be/GXDTFnsRmms)
+
+
 Some screenshots:
 
 ![Screenshots](https://raw.github.com/ErikDeBruijn/TeslaFTW/master/Pebble-Screenshots.png)
