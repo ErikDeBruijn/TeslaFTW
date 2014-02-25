@@ -7,6 +7,7 @@ var retries = 3;
 var passiveRequest = true;
 var chargeData;
 var climateData;
+var settingStore;
 
 var settings = {
 	kwh_cost: 0.21,
@@ -20,7 +21,14 @@ Pebble.addEventListener("ready",
         console.log("Username: "+username + ", password: "+password + ", vehicleID: "+vehicleID + ", debug: "+debug);
 		chargeData = null;
 		climateData = null;
-		
+		settingStore = JSON.parse(localStorage.getItem('settings')) || {unitOfDistance:'mi',unitOfCurrency:'USD',kwhCost:0.30};
+		settings.distance_unit = settingStore.unitOfDistance;
+		settings.distance_factor = (settings.distance_unit == 'km' ? 1.60934 : 1);
+		settings.currency_unit = settingStore.unitOfCurrency;
+		settings.temperature_unit = (settings.distance_unit == 'km' ? 'C' : 'F');
+		settings.kwh_cost = (0+settingStore.kwhCost) || 0.30;
+		console.log("Settings:" + JSON.stringify(settings));
+
         setTimeout(function(){
             if(username === "") {
                 Pebble.showSimpleNotificationOnPebble("About Tesla FTW!", "Hi, use the phone app to go to \"Settings\" and enter your Tesla Login.\n\nEnjoy, Erik");
@@ -315,7 +323,7 @@ function makeChargeTxt(data) {
 }
 
 function makeChargeTxtMini(data) {
-	var chargeTxt = data.battery_level + "% " + parseInt(data.ideal_battery_range*settings.distance_factor,10) + "km " + data.charging_state+" ";
+	var chargeTxt = data.battery_level + "% " + parseInt(data.ideal_battery_range*settings.distance_factor,10) + settings.distance_unit + " " + data.charging_state+" ";
 	return chargeTxt;
 }
 
@@ -324,8 +332,8 @@ function getClimateState(actions) {
 	if(climateData) {
 		data = climateData;
 		Pebble.showSimpleNotificationOnPebble("Car climate",
-			"AC: " + (data.is_auto_conditioning_on ? "on @ " + data.driver_temp_setting + "C":"off") + "\n" +
-			"In/Outside: " + data.inside_temp + "/" +data.outside_temp+"C\n"
+			"AC: " + (data.is_auto_conditioning_on ? "on @ " + data.driver_temp_setting + settings.temperature_unit :"off") + "\n" +
+			"In/Outside: " + data.inside_temp + "/" +data.outside_temp+settings.temperature_unit +"\n"
 		);
 		return;
 	}
@@ -345,8 +353,8 @@ function getClimateState(actions) {
 					climateData = data;
 					if(!passiveRequest) { // Don't show popup if its not a GUI initiated request.
 						Pebble.showSimpleNotificationOnPebble("Car climate",
-							"AC: " + (data.is_auto_conditioning_on ? "on @ " + data.driver_temp_setting + "C":"off") + "\n" +
-							"In/Outside: " + data.inside_temp + "/" +data.outside_temp+"C\n"
+							"AC: " + (data.is_auto_conditioning_on ? "on @ " + data.driver_temp_setting + settings.temperature_unit :"off") + "\n" +
+							"In/Outside: " + data.inside_temp + "/" +data.outside_temp+ settings.temperature_unit + "\n"
 						);
 					}
 					// Pebble.sendAppMessage(
@@ -426,12 +434,14 @@ function showConfiguration(e) {
 function webviewclosed(e) {
     console.log("Configuration window returned: " + e.response);
     var o = JSON.parse(e.response);
+    if(o) {
+	    console.log("Configuration set e.response.username to: " + o.username);
+	    localStorage.setItem('username', o.username);
+	    localStorage.setItem('password', o.password);
+	    localStorage.setItem('debug', o.debug);
 
-    console.log("Configuration set e.response.username to: " + o.username);
-    localStorage.setItem('username', o.username);
-    localStorage.setItem('password', o.password);
-    localStorage.setItem('debug', o.debug);
-    localStorage.setItem('settings', o);
+	    localStorage.setItem('settings', e.response);
+    }
 }
 
 Pebble.addEventListener("appmessage",appmessage);
