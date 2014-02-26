@@ -4,8 +4,8 @@ TeslaFTW
 Pebble App to control your Tesla Model S/X or hopefully soon the model E (economy).
 
 Click below for a demo video:
-[![Alt text for your video](http://img.youtube.com/vi/GXDTFnsRmms/0.jpg)](http://youtu.be/GXDTFnsRmms)
 
+[![Alt text for your video](http://img.youtube.com/vi/GXDTFnsRmms/0.jpg)](http://youtu.be/GXDTFnsRmms)
 
 Some screenshots:
 
@@ -26,13 +26,39 @@ The functions are ordered so that the menu's at the top are the things I use mos
 Installation
 ============
 
-The easiest way is to use the new Pebble Store, from the Pebble App. It needs to be the latest version. When using Android, the store might still be in beta.
- - Android: Ensure you have the latest Pebble App for Android or at least 2.0 Beta 10. You can [download it from here](https://www.dropbox.com/s/4ojeh4z42rdoj9i/PebbleApp-2.0-BETA10.apk).
- - Ensure that you're running firmware v2 on your pebble.
- - iOS: Use the Pebble App store to find Tesla FTW.
- - If the above doesn't work, use the PBW: Download the PBW file to your paired phone [here](https://github.com/ErikDeBruijn/TeslaFTW/blob/master/build/TeslaFTW.pbw?raw=true).
- - Install onto your device with the Pebble App on your phone.
+The easiest way is to use the new Pebble Store, from the Pebble App.
 
+Android:
+
+ - When using Android, the store might still be in beta. It needs to be the latest version (at least 2.0 Beta 10. You can [download it from here](https://www.dropbox.com/s/4ojeh4z42rdoj9i/PebbleApp-2.0-BETA10.apk) ).
+ - Your Phone needs to be configured to install from unknown sources, in order to install the Pebble App 2.0.
+ - Install the downloaded APK from "Downloads".
+ - When asked, tell it to replace the existing Pebble App (v1).
+ - Run the new Pebble App. It will ask you to sign up for a Pebble account.
+ - Allow it to install the latest Pebble firmware on your pebble (v2.0.1 or later).
+ - Choose "Get Apps" in the Pebble App to enter the "Pebble Store"
+ - Search "Tesla" in the Pebble Store to find the WatchApp. Click add/get/install.
+ - If the above doesn't work, use the PBW: Download the PBW file to your paired phone [here](https://github.com/ErikDeBruijn/TeslaFTW/blob/master/build/TeslaFTW.pbw?raw=true).
+ - Your watch will now have the Tesla app. It will ask you to configure it on the phone.
+ - From the Phone app, go into "My Pebble". Tap the "Settings" button under the Tesla App icon.
+ - Then, enter the login of your Tesla account and your preferences.
+ - Go into the Tesla WatchApp from the main menu. The first time takes longer, it needs to find your vehicle.
+ - Now you can use the app!
+
+iPhone:
+
+Note that iPhone support is untested as I don't have an iPhone.
+
+ - Find the mew Pebble App (v2) in the App store.
+ - Run the new Pebble App. It will ask you to sign up for a Pebble account.
+ - Allow it to install the latest Pebble firmware v2 on your pebble.
+ - Choose "Get Apps" in the Pebble App to enter the "Pebble Store"
+ - Search "Tesla" in the Pebble Store to find the WatchApp. Click add/get/install.
+ - Your watch will now have the Tesla app. It will ask you to configure it on the phone.
+ - From the Phone app, go into "My Pebble". Tap the "Settings" button under the Tesla App icon.
+ - Then, enter the login of your Tesla account and your preferences.
+ - Go into the Tesla WatchApp from the main menu. The first time takes longer, it needs to find your vehicle.
+ - Now you can use the app!
 
 Status / Warranty
 =================
