@@ -70,6 +70,7 @@ Compatibility
 
  - Pebble firmware 2.0.1.
  - Android: PebbleApp 2.0 Beta 10.
+ - iPhone isn't working at the moment, I can't test this because I only have an Android Phone.
 
 The app doesn't require a companion app on your Android/iOS device, but needs a recent PebbleApp.
 
