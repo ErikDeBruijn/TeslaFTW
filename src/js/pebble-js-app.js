@@ -1,7 +1,7 @@
 var username = localStorage.getItem('username') || "";
 var password = localStorage.getItem('password') || "";
-var debug = localStorage.getItem('debug') || true;
-var portal = 'https://portal.vn.teslamotors.com';
+var debug = localStorage.getItem('debug') || false;
+var portal;
 var vehicleID = localStorage.getItem('vehicleID') || null;
 var retries = 3;
 var passiveRequest = true;
@@ -27,6 +27,7 @@ Pebble.addEventListener("ready",
 		settings.currency_unit = settingStore.unitOfCurrency;
 		settings.temperature_unit = (settings.distance_unit == 'km' ? 'C' : 'F');
 		settings.kwh_cost = (0+settingStore.kwhCost) || 0.30;
+		portal = settingStore.APIURL || 'https://portal.vn.teslamotors.com';
 		console.log("Settings:" + JSON.stringify(settings));
 
         setTimeout(function(){
