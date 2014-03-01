@@ -1,5 +1,3 @@
-var username = localStorage.getItem('username') || "";
-var password = localStorage.getItem('password') || "";
 var debug = localStorage.getItem('debug') || false;
 var portal;
 var vehicleID = localStorage.getItem('vehicleID') || null;
@@ -17,8 +15,7 @@ var settings = {
 };
 Pebble.addEventListener("ready",
     function(e) {
-        console.log("==== TESLA CTL9.1 =====");
-        console.log("Username: "+username + ", password: "+password + ", vehicleID: "+vehicleID + ", debug: "+debug);
+        console.log("==== TESLA CTL =====");
 		chargeData = null;
 		climateData = null;
 		settingStore = JSON.parse(localStorage.getItem('settings')) || {unitOfDistance:'mi',unitOfCurrency:'USD',kwhCost:0.30};
@@ -28,10 +25,11 @@ Pebble.addEventListener("ready",
 		settings.temperature_unit = (settings.distance_unit == 'km' ? 'C' : 'F');
 		settings.kwh_cost = (0+settingStore.kwhCost) || 0.30;
 		portal = settingStore.APIURL || 'https://portal.vn.teslamotors.com';
+        console.log("Username: "+settingStore.username + ", password: "+settingStore.password + ", vehicleID: "+vehicleID + ", debug: "+debug);
 		console.log("Settings:" + JSON.stringify(settings));
 
         setTimeout(function(){
-            if(username === "") {
+            if(settingStore.username === "" || settingStore.username === false || settingStore.username === null) {
                 Pebble.showSimpleNotificationOnPebble("About Tesla FTW!", "Hi, use the phone app to go to \"Settings\" and enter your Tesla Login.\n\nEnjoy, Erik");
                 return false;
             }
@@ -172,8 +170,8 @@ function performActions(actions) {
 function doLogin(actions) {
 	console.log("doLogin(): Attempting to receive a token");
 	var data = new FormData();
-	data.append('user_session[email]', username.trim());
-	data.append('user_session[password]', password.trim());
+	data.append('user_session[email]', settingStore.username.trim());
+	data.append('user_session[password]', settingStore.password.trim());
 	var req = new XMLHttpRequest();
 	req.TimeOut = 2000;
 	req.open('POST', portal +'/login');
@@ -182,7 +180,7 @@ function doLogin(actions) {
 			console.log("Response (status: "+req.status+"): " + this.responseText);
 			if(req.status == 200) {
 				Pebble.sendAppMessage({"99":"Success!!"});
-				performActions(actions);
+				performActions(actions); // perform remaining actions
 			} else {
 				console.log("Failed. "+ req.status.toString()+ " "+e.error+" " +req.error);
 				Pebble.sendAppMessage({"99":"Failed!!"});
@@ -196,10 +194,11 @@ function doLogin(actions) {
 			console.log("Response (status: "+req.status+"): " + this.responseText);
 			if(req.status == 200) {
 				Pebble.sendAppMessage({"99":"Success!!"});
-				performActions(actions);
+				performActions(actions); // perform remaining actions
 			} else {
 				console.log("Failed. "+ req.status.toString()+ " "+e.error+" " +req.error);
-				Pebble.sendAppMessage({"99":"Failed!!"});
+				Pebble.sendAppMessage({"99":"Login failed!"});
+				Pebble.showSimpleNotificationOnPebble("Login failure", "There was a login error (username="+settingStore.username+"): "+ req.status.toString()+ " "+e.error);
 			}
 		}
 	};
@@ -231,7 +230,7 @@ function getVehicles(actions) {
 					localStorage.setItem('vehicleData', vehicleData);
 					localStorage.setItem('vehicleID', vehicleData.id);
 
-					performActions(actions);
+					performActions(actions); // perform remaining actions
 				} else
 				Pebble.showSimpleNotificationOnPebble("Vehicle list", "No vehicles were listed.");
 			} else {
@@ -267,21 +266,9 @@ function getChargedState(actions) {
 					theData = data[0];
 					if(!passiveRequest) // Don't show popup if its not a GUI initiated request.
 						showChargedState(data);
-					// Pebble.sendAppMessage(
-					// 	{
-					// 		"batteryPerc":data.battery_level,
-					// 		"chargingState":data.charging_state,
-					// 		"hoursUntilFull":data.time_to_full_charge,
-					// 		"chargerVoltage":data.charger_voltage,
-					// 		"chargerCurrent":data.charger_actual_current,
-					// 		"idealRangeKm":data.ideal_battery_range*1.60934,
-					// 		"idealAddedKm":data.charge_miles_added_ideal*1.60934,
-					// 		"chargeToMaxRange":	data.charge_to_max_range,
-					// 		"chargeRateKm":	data.charge_rate*1.60934
-					// });
-					// Pebble.sendAppMessage({"99":"Ultimate Success!!"});
+
 					Pebble.sendAppMessage({ "batteryPerc": makeChargeTxtMini(data) + "" },connectOkHandler,connectFailHandler);
-					performActions(actions);
+					performActions(actions); // perform remaining actions
 				}
 			} else {
 				console.log("Failed.\n");
@@ -358,17 +345,8 @@ function getClimateState(actions) {
 							"In/Outside: " + data.inside_temp + "/" +data.outside_temp+ settings.temperature_unit + "\n"
 						);
 					}
-					// Pebble.sendAppMessage(
-					// 	{
-					// 		"insideDegC":	data.inside_temp,
-					// 		"outsideDegC":	data.outside_temp,
-					// 		"driverSettingDegC":	data.driver_temp_setting,
-					// 		"passengerSettingDegC":	data.passenger_temp_setting,
-					// 		"acStateOn": data.is_auto_conditioning_on
-					// });
-					// Pebble.sendAppMessage({"99":"Ultimate Success!!"});
 					Pebble.sendAppMessage({ "interiorTemp": data.inside_temp + "/" + data.outside_temp },connectOkHandler,connectFailHandler);
-					performActions(actions);
+					performActions(actions); // perform remaining actions
 				}
 			} else {
 				console.log("Failed.\n");
@@ -408,7 +386,7 @@ function performCommand(action,actions) {
 							"" + data.reason
 						);
 					}
-					performActions(actions);
+					performActions(actions); // perform remaining actions
 				}
 
 			} else {
@@ -429,18 +407,13 @@ function connectFailHandler(e) {
 
 function showConfiguration(e) {
 	console.log("Configuration menu....");
-	Pebble.openURL('https://dl.dropboxusercontent.com/u/7326702/Do-not-delete/pebbleconf1.html?name='+username);
-	// window.location.href = "pebblejs://close#success";
+	Pebble.openURL('https://dl.dropboxusercontent.com/u/7326702/Do-not-delete/pebbleconf1.html?name='+settingStore.username);
 }
 function webviewclosed(e) {
     console.log("Configuration window returned: " + e.response);
     var o = JSON.parse(e.response);
     if(o) {
 	    console.log("Configuration set e.response.username to: " + o.username);
-	    localStorage.setItem('username', o.username);
-	    localStorage.setItem('password', o.password);
-	    localStorage.setItem('debug', o.debug);
-
 	    localStorage.setItem('settings', e.response);
     }
 }
