@@ -3,8 +3,8 @@
   "shortName": "Tesla FTW!",
   "longName": "Tesla Model S Control",
   "companyName": "In Spire",
-  "versionCode": 5,
-  "versionLabel": "1.0.5",
+  "versionCode": 6,
+  "versionLabel": "1.0.6",
   "capabilities": [ "configurable" ],
   "watchapp": {
     "watchface": false

@@ -1,5 +1,9 @@
-var debug = localStorage.getItem('debug') || false;
-var portal;
+/*
+IDEAS: Shake to refresh range/climate?
+
+*/
+
+var debug = localStorage.getItem('debug') || false; 
 var vehicleID = localStorage.getItem('vehicleID') || null;
 var retries = 3;
 var passiveRequest = true;
@@ -53,8 +57,7 @@ function appmessage(e) {
 	if(typeof e.payload.menuIndexClicked == 'number') {
 		console.log("==== menuIndexClicked = " + e.payload.menuIndexClicked);
 		switch (e.payload.menuIndexClicked) {
-			case 0:
-				console.log("MENU0.0: Turn on AC");
+			case 0: console.log("MENU0.0: Turn on AC");
 				if(vehicleID === null)
 					doLogin(['getVehicles',{name:"Enable A/C",cmd:"auto_conditioning_start"}]);
 				else
@@ -96,9 +99,8 @@ function appmessage(e) {
 				break;
 			case 23:
 				console.log("MENU2.3: Reconnect vid="+ vehicleID);
-				performActions(['resetdata','doLogin','getVehicles']);
-				// Pebble.showSimpleNotificationOnPebble("Connection to car", "Connecting...");
-				// setTimeout(function(){Pebble.showSimpleNotificationOnPebble("Connection to car", "Still connecting...");},3000);
+				Pebble.showSimpleNotificationOnPebble("Reconnect", "I will attempt to reconnect to the API, find your car and get info about it.");
+				performActions(['resetdata','doLogin','getVehicles','getChargedState','disablePassiveRequests']);
 				break;
 			case 24:
 				console.log("MENU2.4: Get Vehicle info vid="+ vehicleID);
@@ -122,49 +124,42 @@ function appmessage(e) {
 			break;
 		}
 	}
-	if(e.payload.interiorTemp) {
-		console.log("interiorTemp = " + e.payload.interiorTemp);
-	}
 }
 
 function performActions(actions) {
-	console.log("performActions("+actions+"): next up: "+action+"\n");
+	console.log("performActions("+actions+")");
 	var action = actions.shift();
+	console.log("performActions: next up is "+action+"\n");
 	if(vehicleID === null) {
 		if(action != 'getVehicles')
 			actions.unshift('getVehicles');
 		if(action != 'doLogin')
 			actions.unshift('doLogin');
-		if(--retries > 0) {
-			console.log("Calling performActions() from performActions() itself (retries = "+retries+").");
-			return performActions(actions);
-		}
 	}
-	if(action == 'getVehicles')
-		getVehicles(actions);
-	if(action == 'getChargedState')
-		getChargedState(actions);
-	if(action == 'getClimateState')
-		getClimateState(actions);
-	if(action == 'disablePassiveRequests') {
-		passiveRequest = false;
+	switch(action) {
+		case 'getVehicles': getVehicles(actions); break;
+		case 'getChargedState': getChargedState(actions); break;
+		case 'getClimateState': getClimateState(actions); break;
+		case 'disablePassiveRequests': passiveRequest = false; break;
+		case 'enablePassiveRequests': passiveRequest = true; break;
+		case 'resetdata':
+			console.log("Resetting vars...");
+			passiveRequest = true;
+			chargeData = null;
+			climateData = null;
+			vehicleID = null;
+			localStorage.removeItem('vehicleID');
+			retries = 3;
+			// performActions(actions);
+			break;
 	}
-	if(action == 'enablePassiveRequests') {
-		passiveRequest = true;
-	}
-	if(action == 'resetdata') {
-		console.log("Resetting vars...");
-		passiveRequest = true;
-		chargeData = null;
-		climateData = null;
-		vehicleID = null;
-		localStorage.removeItem('vehicleID');
-	}
-
 	if(typeof action == 'object' && action.cmd) {
 		performCommand(action,actions);
 	}
-
+	if(--retries > 0 && (vehicleID === null)) {
+		console.log("Calling performActions() from performActions() itself (retries = "+retries+").");
+		return performActions(actions);
+	}
 }
 // IO calls to API uses code from: https://github.com/hjespers/teslams
 function doLogin(actions) {
@@ -222,20 +217,21 @@ function getVehicles(actions) {
 				console.log(data);
 				if(data.length !== 0) {
 					vehicleData = data[0];
-					Pebble.sendAppMessage({"99":"Ultimate Success!!"});
 					if(data.length > 1)
 						Pebble.showSimpleNotificationOnPebble("Vehicle list", "Multiple vehicles were listed ("+data.length+"). Using the first one: "+vehicleData.id);
 					if(data.length == 1)
-						Pebble.showSimpleNotificationOnPebble("Vehicle list", "One vehicle found: "+vehicleData.id+": "+vehicleData);
+						Pebble.showSimpleNotificationOnPebble("Vehicle list", "One vehicle found: "+vehicleData.id+": "+JSON.stringify(vehicleData));
 					localStorage.setItem('vehicleData', vehicleData);
 					localStorage.setItem('vehicleID', vehicleData.id);
+					vehicleID = vehicleData.id;
+					Pebble.sendAppMessage({"99":"Vehicle "+vehicleID+" OK"});
 
 					performActions(actions); // perform remaining actions
 				} else
 				Pebble.showSimpleNotificationOnPebble("Vehicle list", "No vehicles were listed.");
 			} else {
 				console.log("Failed.\n");
-				Pebble.sendAppMessage({"99":"Failed!!"});
+				Pebble.sendAppMessage({"99":"Failed retrieval!"});
 			}
 		}
 	};
@@ -321,7 +317,7 @@ function getClimateState(actions) {
 		data = climateData;
 		Pebble.showSimpleNotificationOnPebble("Car climate",
 			"AC: " + (data.is_auto_conditioning_on ? "on @ " + data.driver_temp_setting + settings.temperature_unit :"off") + "\n" +
-			"In/Outside: " + data.inside_temp + "/" +data.outside_temp+settings.temperature_unit +"\n"
+			"In/Outside: " + (data.inside_temp ? data.inside_temp : "???") + "/" +(data.outside_temp ? data.outside_temp : "???")+" "+settings.temperature_unit +"\n"
 		);
 		return;
 	}
@@ -342,10 +338,10 @@ function getClimateState(actions) {
 					if(!passiveRequest) { // Don't show popup if its not a GUI initiated request.
 						Pebble.showSimpleNotificationOnPebble("Car climate",
 							"AC: " + (data.is_auto_conditioning_on ? "on @ " + data.driver_temp_setting + settings.temperature_unit :"off") + "\n" +
-							"In/Outside: " + data.inside_temp + "/" +data.outside_temp+ settings.temperature_unit + "\n"
+							"In/Outside: " + (data.inside_temp ? data.inside_temp : "???") + "/" +(data.outside_temp ? data.outside_temp : "???")+ settings.temperature_unit + "\n"
 						);
 					}
-					Pebble.sendAppMessage({ "interiorTemp": data.inside_temp + "/" + data.outside_temp },connectOkHandler,connectFailHandler);
+					// Pebble.sendAppMessage({ "interiorTemp": data.inside_temp + "/" + data.outside_temp },connectOkHandler,connectFailHandler);
 					performActions(actions); // perform remaining actions
 				}
 			} else {
