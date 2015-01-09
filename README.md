@@ -1,7 +1,7 @@
 TeslaFTW
 ========
 
-Pebble App to control your Tesla Model S/X or hopefully soon the model E (economy).
+Pebble App to control your Tesla Model S/X or hopefully soon the Model III (economy).
 
 Click below for a demo video:
 
@@ -11,7 +11,7 @@ Some screenshots:
 
 ![Screenshots](https://raw.github.com/ErikDeBruijn/TeslaFTW/master/Pebble-Screenshots.png)
 
-It uses the Tesla API. To control your Tesla. It will allow you to do things like the following:
+It uses the Tesla API to control your Tesla. It will allow you to do things like the following:
 
  - Turn on/off A/C (or car pre-heating in winter)
  - See indoor and outdoor temperature
