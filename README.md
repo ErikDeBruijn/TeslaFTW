@@ -30,11 +30,7 @@ The easiest way is to use the new Pebble Store, from the Pebble App.
 
 Android:
 
- - When using Android, the store might still be in beta. It needs to be the latest version (at least 2.0 Beta 10. You can [download it from here](https://www.dropbox.com/s/4ojeh4z42rdoj9i/PebbleApp-2.0-BETA10.apk) ).
- - Your Phone needs to be configured to install from unknown sources, in order to install the Pebble App 2.0.
- - Install the downloaded APK from "Downloads".
- - When asked, tell it to replace the existing Pebble App (v1).
- - Run the new Pebble App. It will ask you to sign up for a Pebble account.
+ - Run the Pebble App. It will ask you to sign up for a Pebble account.
  - Allow it to install the latest Pebble firmware on your pebble (v2.0.1 or later).
  - Choose "Get Apps" in the Pebble App to enter the "Pebble Store"
  - Search "Tesla" in the Pebble Store to find the WatchApp. Click add/get/install.
@@ -49,7 +45,7 @@ iPhone:
 
 Note that iPhone support is untested as I don't have an iPhone.
 
- - Find the mew Pebble App (v2) in the App store.
+ - Find the new Pebble App (v2) in the App store.
  - Run the new Pebble App. It will ask you to sign up for a Pebble account.
  - Allow it to install the latest Pebble firmware v2 on your pebble.
  - Choose "Get Apps" in the Pebble App to enter the "Pebble Store"
@@ -68,9 +64,9 @@ Using this application is entirely at your own risk. No guarantee is given I use
 Compatibility
 =============
 
- - Pebble firmware 2.0.1.
- - Android: PebbleApp 2.0 Beta 10.
- - iPhone isn't working at the moment, I can't test this because I only have an Android Phone.
+ - Pebble firmware 2.0.1. Pebble Time.
+ - Android: PebbleApp 2.0 Beta 10 or later.
+ - iPhone might not be working at the moment, I can't test this because I only have an Android Phone.
 
 The app doesn't require a companion app on your Android/iOS device, but needs a recent PebbleApp.
 
