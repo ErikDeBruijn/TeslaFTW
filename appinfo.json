@@ -1,10 +1,10 @@
 {
-  "uuid": "5f1584b1-d138-41d5-95fb-1af8a46a7005",
-  "shortName": "Tesla FTW!",
+  "uuid": "5f1584b1-d138-41d5-95fb-1af8a46a7006",
+  "shortName": "TeslaFTW!",
   "longName": "Tesla Model S Control",
   "companyName": "In Spire",
-  "versionCode": 6,
-  "versionLabel": "1.0.6",
+  "versionCode": 21,
+  "versionLabel": "2.1",
   "capabilities": [ "configurable" ],
   "watchapp": {
     "watchface": false

@@ -63,16 +63,14 @@ enum {
   // Act on the found fields received
   if (tuple1 && tuple1->key == 1) {
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Temp: %s %lu", tuple1->value->cstring, tuple1->key);
-    first_menu_items[1].subtitle = tuple1->value->cstring;
+    first_menu_items[0].subtitle = tuple1->value->cstring;
     //%s", tuple1->value->cstring);//tuple1->value->cstring;
   }
 
-  Tuple *tuple2 = dict_find(iter, 2);//charge
+  Tuple *tuple2 = dict_find(iter, 2);
   if(tuple2 && tuple2->key == 2) {
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Charge: %s %lu", tuple2->value->cstring, tuple2->key);
     second_menu_items[1].subtitle = tuple2->value->cstring;
-    //" %s", tuple2->value->cstring); //tuple2->value->cstring;
-    // layer_mark_dirty(simple_menu_layer_get_layer(simple_menu_layer));
  }
   layer_mark_dirty(simple_menu_layer_get_layer(simple_menu_layer));
 }

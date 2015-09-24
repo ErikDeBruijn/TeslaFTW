@@ -2,6 +2,9 @@
 IDEAS: Shake to refresh range/climate?
 
 */
+var access_token;
+var TESLA_CLIENT_ID='e4a9949fcfa04068f59abb5a658f2bac0a3428e4652315490b659d5ab3f35a9e';
+var TESLA_CLIENT_SECRET='c75f14bbadc8bee3a7594412c31416f8300256d7668ea7e6e7f06727bfb9d220';
 
 var debug = localStorage.getItem('debug') || false; 
 var vehicleID = localStorage.getItem('vehicleID') || null;
@@ -10,6 +13,7 @@ var passiveRequest = true;
 var chargeData;
 var climateData;
 var settingStore;
+var portal = 'https://owner-api.teslamotors.com';
 
 var settings = {
 	kwh_cost: 0.21,
@@ -28,7 +32,8 @@ Pebble.addEventListener("ready",
 		settings.currency_unit = settingStore.unitOfCurrency;
 		settings.temperature_unit = (settings.distance_unit == 'km' ? 'C' : 'F');
 		settings.kwh_cost = (0+settingStore.kwhCost) || 0.30;
-		portal = settingStore.APIURL || 'https://portal.vn.teslamotors.com';
+//		portal = settingStore.APIURL || 'https://portal.vn.teslamotors.com';
+		// portal = 'https://owner-api.teslamotors.com';
         console.log("Username: "+settingStore.username + ", password: "+settingStore.password + ", vehicleID: "+vehicleID + ", debug: "+debug);
 		console.log("Settings:" + JSON.stringify(settings));
 
@@ -39,9 +44,9 @@ Pebble.addEventListener("ready",
             }
             if(vehicleID === null) {
                 console.log("Need a vehicleID...");
-                doLogin(['getVehicles','getClimateState','getChargedState','disablePassiveRequests']);
+                doLogin(['getVehicles','getClimateState','getChargedState']);
             } else {
-				getClimateState(['getChargedState',"disablePassiveRequests"]);// passively get charged state (skip popup)
+				doLogin(['getClimateState','getChargedState']);// passively get charged state (skip popup)
             }
         },1000);
     }
@@ -55,13 +60,14 @@ function appmessage(e) {
     console.log("Menu = " + typeof e.payload.menuIndexClicked);
 
 	if(typeof e.payload.menuIndexClicked == 'number') {
+		passiveRequest = false;
 		console.log("==== menuIndexClicked = " + e.payload.menuIndexClicked);
 		switch (e.payload.menuIndexClicked) {
 			case 0: console.log("MENU0.0: Turn on AC");
 				if(vehicleID === null)
-					doLogin(['getVehicles',{name:"Enable A/C",cmd:"auto_conditioning_start"}]);
+					doLogin(['getVehicles',{name:"Enable A/C",cmd:"auto_conditioning_start",method:'POST'}]);
 				else
-					performActions([{name:"Enable A/C",cmd:"auto_conditioning_start"}]);
+					performActions([{name:"Enable A/C",cmd:"auto_conditioning_start",method:'POST'}]);
 				break;
 			case 1:
 				console.log("MENU0.1: Climate stats");
@@ -73,8 +79,8 @@ function appmessage(e) {
 			case 10:
 				console.log("MENU1.0: Start charge");
 				performActions([
-					{name:"Open charge door",cmd:"charge_port_door_open"},
-					{name:"Start charge",cmd:"charge_start"}]
+					{name:"Open charge door",cmd:"charge_port_door_open",method:'POST'},
+					{name:"Start charge",cmd:"charge_start",method:'POST'}]
 				);
 				break;
 			case 11:
@@ -83,19 +89,19 @@ function appmessage(e) {
 				break;
 			case 12:
 				console.log("MENU1.2: Stop charge");
-				performActions([{name:"Stop charging",cmd:"charge_stop"}]);
+				performActions([{name:"Stop charging",cmd:"charge_stop",method:'POST'}]);
 				break;
 			case 20:
 				console.log("MENU2.0: Lock doors");
-				performActions([{name:"Lock doors",cmd:"door_lock"}]);
+				performActions([{name:"Lock doors",cmd:"door_lock",method:'POST'}]);
 				break;
 			case 21:
 				console.log("MENU2.1: Honk");
-				performActions([{name:"Honk horn",cmd:"honk_horn"}]);
+				performActions([{name:"Honk horn",cmd:"honk_horn",method:'POST'}]);
 				break;
 			case 22:
 				console.log("MENU2.2: Flash lights");
-				performActions([{name:"Flash lights",cmd:"flash_lights"}]);
+				performActions([{name:"Flash lights",cmd:"flash_lights",method:'POST'}]);
 				break;
 			case 23:
 				console.log("MENU2.3: Reconnect vid="+ vehicleID);
@@ -104,11 +110,11 @@ function appmessage(e) {
 				break;
 			case 24:
 				console.log("MENU2.4: Get Vehicle info vid="+ vehicleID);
-				performActions([{name:'Get vehicle info',cmd:'vehicle_state'}]);
+				performActions([{name:'Get vehicle info',cmd:'vehicle_state',method:'GET'}]);
 				break;
 			case 25:
 				console.log("MENU2.5: Turn off A/C vid="+ vehicleID);
-				performActions([{name:'Turn off A/C',cmd:'auto_conditioning_stop'}]);
+				performActions([{name:'Turn off A/C',cmd:'auto_conditioning_stop',method:'POST'}]);
 				break;
 
 			case 26:
@@ -163,26 +169,35 @@ function performActions(actions) {
 }
 // IO calls to API uses code from: https://github.com/hjespers/teslams
 function doLogin(actions) {
+	// if(access_token)
+		// return performActions(actions); // perform remaining actions
+	//FIXME: get access_token
 	console.log("doLogin(): Attempting to receive a token");
 	var data = new FormData();
-	data.append('user_session[email]', settingStore.username.trim());
-	data.append('user_session[password]', settingStore.password.trim());
+	data.append('grant_type','password');
+	data.append('client_id',TESLA_CLIENT_ID);
+	data.append('client_secret',TESLA_CLIENT_SECRET);
+	data.append('email', settingStore.username.trim());
+	data.append('password', settingStore.password.trim());
 	var req = new XMLHttpRequest();
 	req.TimeOut = 2000;
-	req.open('POST', portal +'/login');
-	req.onerror = function(e) {
+	req.open('POST', portal+'/oauth/token',true);
+	req.onreadystatechange = function(e) {
 		if (req.readyState == 4) {
-			console.log("Response (status: "+req.status+"): " + this.responseText);
+			console.log("doLogin() response (http: "+req.status+"): " + this.responseText);
 			if(req.status == 200) {
+				try { data = JSON.parse(this.responseText); } catch(err) { return cb(new Error('login failed')); }
+				if (typeof data != "object") return cb(new Error('expecting a JSON object from Tesla Motors cloud service'));
+				console.log(data);
+				access_token = data.access_token;
+				console.log('access_token' + access_token);
 				Pebble.sendAppMessage({"99":"Success!!"});
 				performActions(actions); // perform remaining actions
 			} else {
-				console.log("Failed. "+ req.status.toString()+ " "+e.error+" " +req.error);
-				Pebble.sendAppMessage({"99":"Failed!!"});
+				console.log("Failed. "+ req.status.toString()+ " "+e.error+" " +req.error+ "response Text"+req.responseText);
+				Pebble.showSimpleNotificationOnPebble("Connection problem", "Could not verify username and password at "+ portal + '/login. Invalid HTTPS response.');
 			}
 		}
-		Pebble.showSimpleNotificationOnPebble("Connection problem", "Could not verify username and password at "+ portal + '/login. Invalid HTTPS response.');
-		console.log("req.onerror finished...");
 	};
 	req.onload = function(e) {
 		if (req.readyState == 4) {
@@ -205,7 +220,8 @@ function getVehicles(actions) {
 	console.log("getVehicles(): Attempting to receive an array (!) of vehicles :)");
 
 	var req = new XMLHttpRequest();
-	req.open('GET', portal +'/vehicles', true);
+	req.open('GET', portal +'/api/1/vehicles', true);
+	req.setRequestHeader('Authorization','Bearer '+access_token);
 	req.onload = function(e) {
 		if (req.readyState == 4) {
 			console.log("Response (status: "+req.status+"): " + this.responseText);
@@ -213,19 +229,17 @@ function getVehicles(actions) {
 				console.log("HTTP GET success.\n");
 				try { data = JSON.parse(this.responseText); } catch(err) { return cb(new Error('login failed')); }
 				if (typeof data != "object") return cb(new Error('expecting a JSON object from Tesla Motors cloud service'));
-				console.log("Vehicles (num="+ data.length+ "): ");
-				console.log(data);
-				if(data.length !== 0) {
-					vehicleData = data[0];
-					if(data.length > 1)
-						Pebble.showSimpleNotificationOnPebble("Vehicle list", "Multiple vehicles were listed ("+data.length+"). Using the first one: "+vehicleData.id);
-					if(data.length == 1)
-						Pebble.showSimpleNotificationOnPebble("Vehicle list", "One vehicle found: "+vehicleData.id+": "+JSON.stringify(vehicleData));
+				console.log("Vehicles (num="+ data.response.length+ "): ");
+				if(data.response.length !== 0) {
+					vehicleData = data.response[0];
+					if(data.response.length > 1)
+						Pebble.showSimpleNotificationOnPebble("Vehicle list", "Multiple vehicles were listed ("+data.length+"). Using the first one: "+vehicleData.id_s);
+					if(data.response.length == 1)
+						Pebble.showSimpleNotificationOnPebble("Vehicle list", "1 vehicle found: "+vehicleData.id_s+": "+JSON.stringify(vehicleData));
 					localStorage.setItem('vehicleData', vehicleData);
-					localStorage.setItem('vehicleID', vehicleData.id);
-					vehicleID = vehicleData.id;
-					Pebble.sendAppMessage({"99":"Vehicle "+vehicleID+" OK"});
-
+					localStorage.setItem('vehicleID', vehicleData.id_s);
+					vehicleID = vehicleData.id_s;
+					console.log("Using vehicle ID "+vehicleID);
 					performActions(actions); // perform remaining actions
 				} else
 				Pebble.showSimpleNotificationOnPebble("Vehicle list", "No vehicles were listed.");
@@ -246,7 +260,14 @@ function getChargedState(actions) {
 	}
 
 	var req = new XMLHttpRequest();
-	req.open('GET', portal +'/vehicles/'+vehicleID+'/command/charge_state', true);
+	// var url = portal +'/api/1/vehicles/29990376295568339/data_request/charge_state';
+	var url = portal +'/api/1/vehicles/'+vehicleID+'/data_request/charge_state';
+	console.log("GET "+url);
+	req.open('GET', url, true);
+	req.setRequestHeader('Authorization','Bearer '+access_token);
+	req.setRequestHeader('User-Agent', 'Model S 2.1.79 (Nexus 5; Android REL 4.4.4; en_US)');
+	req.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+	req.setRequestHeader('Accept-Encoding', 'gzip,deflate');
 	req.onload = function(e) {
 		if (req.readyState == 4) {
 			console.log("Response (status: "+req.status+"): " + this.responseText);
@@ -256,14 +277,15 @@ function getChargedState(actions) {
 				if (typeof data != "object") return cb(new Error('expecting a JSON object from Tesla Motors cloud service'));
 				console.log("Results (num="+ data.length+ "): ");
 				console.log(data);
-				chargeData = data;
+				chargeData = data.response;
+				console.log("chargeData: "+chargeData);
 
 				if(data.length !== 0) {
 					theData = data[0];
 					if(!passiveRequest) // Don't show popup if its not a GUI initiated request.
 						showChargedState(data);
 
-					Pebble.sendAppMessage({ "batteryPerc": makeChargeTxtMini(data) + "" },connectOkHandler,connectFailHandler);
+					Pebble.sendAppMessage({ "batteryPerc": makeChargeTxtMini(chargeData) + "" },connectOkHandler,connectFailHandler);
 					performActions(actions); // perform remaining actions
 				}
 			} else {
@@ -314,38 +336,40 @@ function makeChargeTxtMini(data) {
 function getClimateState(actions) {
 	console.log("getClimateState(vid="+vehicleID+",nextActions="+actions+")");
 	if(climateData) {
-		data = climateData;
 		Pebble.showSimpleNotificationOnPebble("Car climate",
-			"AC: " + (data.is_auto_conditioning_on ? "on @ " + data.driver_temp_setting + settings.temperature_unit :"off") + "\n" +
-			"In/Outside: " + (data.inside_temp ? data.inside_temp : "???") + "/" +(data.outside_temp ? data.outside_temp : "???")+" "+settings.temperature_unit +"\n"
+			"AC: " + (climateData.is_auto_conditioning_on ? "on @ " + climateData.driver_temp_setting + settings.temperature_unit :"off") + "\n" +
+			"In/Outside: " + (climateData.inside_temp ? climateData.inside_temp : "???") + "/" +(climateData.outside_temp ? climateData.outside_temp : "???")+" "+settings.temperature_unit +"\n"
 		);
 		return;
 	}
 
 	var req = new XMLHttpRequest();
-	req.open('GET', portal +'/vehicles/'+vehicleID+'/command/climate_state', true);
+	// var url = portal+'https://owner-api.teslamotors.com/api/1/vehicles/29990376295568339/data_request/climate_state';
+	var url = portal+'/api/1/vehicles/'+vehicleID+'/data_request/climate_state';
+	req.open('GET', url, true);
+	req.setRequestHeader('Authorization','Bearer '+access_token);
 	req.onload = function(e) {
 		if (req.readyState == 4) {
 			console.log("Response (status: "+req.status+"): " + this.responseText);
 			if(req.status == 200) {
-				console.log("HTTP GET success.\n");
 				try { data = JSON.parse(this.responseText); } catch(err) { return cb(new Error('Data couldnt be parsed. Is it JSON? '+this.responseText)); }
 				if (typeof data != "object") return cb(new Error('expecting a JSON object from Tesla Motors cloud service'));
-				console.log(data);
-				if(data.length !== 0) {
-					theData = data[0];
-					climateData = data;
+				if(data.response.length !== 0) {
+					console.log(data.response.toString());
+					theData = data.response;
+					climateData = data.response;
 					if(!passiveRequest) { // Don't show popup if its not a GUI initiated request.
 						Pebble.showSimpleNotificationOnPebble("Car climate",
-							"AC: " + (data.is_auto_conditioning_on ? "on @ " + data.driver_temp_setting + settings.temperature_unit :"off") + "\n" +
-							"In/Outside: " + (data.inside_temp ? data.inside_temp : "???") + "/" +(data.outside_temp ? data.outside_temp : "???")+ settings.temperature_unit + "\n"
+							"AC: " + (climateData.is_auto_conditioning_on ? "on @ " + climateData.driver_temp_setting + settings.temperature_unit :"off") + "\n" +
+							"In/Outside: " + (climateData.inside_temp ? climateData.inside_temp : "???") + "/" +(climateData.outside_temp ? climateData.outside_temp : "???")+ settings.temperature_unit + "\n"
 						);
-					}
-					// Pebble.sendAppMessage({ "interiorTemp": data.inside_temp + "/" + data.outside_temp },connectOkHandler,connectFailHandler);
+					} 
+					// Pebble.sendAppMessage({ "insideDegC": climateData.inside_temp+"C / "+climateData.outside_temp+"C" },connectOkHandler,connectFailHandler);
+					Pebble.sendAppMessage({ "interiorTemp": data.inside_temp + "/" + data.outside_temp },connectOkHandler,connectFailHandler);
 					performActions(actions); // perform remaining actions
 				}
 			} else {
-				console.log("Failed.\n");
+				console.log("Failed.\n"+this.getAllResponseHeaders());
 				Pebble.sendAppMessage({"99":"Failed!!"});
 			}
 		}
@@ -355,9 +379,21 @@ function getClimateState(actions) {
 
 function performCommand(action,actions) {
 	console.log("cmd: "+action.cmd+"(vid="+vehicleID+")");
+	if(typeof action.method == "undefined")
+		action.method = 'GET';
+	if(action.method == 'POST') {
+		chargeData = null; 
+		climateData = null;
+	}
 
 	var req = new XMLHttpRequest();
-	req.open('GET', portal +'/vehicles/'+vehicleID+'/command/'+action.cmd, true);
+	var url = portal +'/api/1/vehicles/'+vehicleID+'/command/'+action.cmd;
+	console.log(action.method+" url: "+url);
+	req.open(action.method, url, true);
+	req.setRequestHeader('Authorization','Bearer '+access_token);
+	req.setRequestHeader('User-Agent', 'Model S 2.1.79 (Nexus 5; Android REL 4.4.4; en_US)');
+	req.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+	req.setRequestHeader('Accept-Encoding', 'gzip,deflate');
 	req.onload = function(e) {
 		if (req.readyState == 4) {
 			console.log("Response (status: "+req.status+"): " + this.responseText);
@@ -366,7 +402,7 @@ function performCommand(action,actions) {
 				try { data = JSON.parse(this.responseText); } catch(err) { return cb(new Error('Data couldnt be parsed. Is it JSON? '+this.responseText)); }
 				if (typeof data != "object") return cb(new Error('expecting a JSON object from Tesla Motors cloud service'));
 				console.log(data);
-				if(data.result === false) {
+				if(data.response === false) {
 					Pebble.showSimpleNotificationOnPebble(action.name,
 						"Result: " + data.result + "\n" +
 						"Reason: " + data.reason
@@ -374,12 +410,12 @@ function performCommand(action,actions) {
 					performActions(actions);
 				}
 				else {
-					if(typeof data.result == 'undefined')
+					if(typeof data.response == 'undefined')
 						Pebble.showSimpleNotificationOnPebble(action.name,"HTTP response:\n"+this.responseText);
 					else {
 						Pebble.showSimpleNotificationOnPebble(action.name,
 							"Success! \n" +
-							"" + data.reason
+							"" + data.response.reason
 						);
 					}
 					performActions(actions); // perform remaining actions
