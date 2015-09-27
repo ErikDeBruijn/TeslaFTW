@@ -3,9 +3,11 @@
   "shortName": "TeslaFTW!",
   "longName": "Tesla Model S Control",
   "companyName": "In Spire",
-  "versionCode": 21,
-  "versionLabel": "2.1",
-  "capabilities": [ "configurable" ],
+  "versionCode": 22,
+  "versionLabel": "2.2",
+  "capabilities": [
+    "configurable"
+  ],
   "watchapp": {
     "watchface": false
   },
@@ -13,19 +15,19 @@
     "menuIndexClicked": 0,
     "interiorTemp": 1,
     "batteryPerc": 2,
-    "chargingState":3,
-    "hoursUntilFull":4,
-    "chargerVoltage":5,
-    "chargerCurrent":6,
-    "idealRangeKm":7,
-    "idealAddedKm":8,
-    "chargeToMaxRange":9,
-    "chargeRateKm":10,
-    "insideDegC":11,
-    "outsideDegC":12,
-    "driverSettingDegC":13,
-    "passengerSettingDegC":14,
-    "acStateOn":15
+    "chargingState": 3,
+    "hoursUntilFull": 4,
+    "chargerVoltage": 5,
+    "chargerCurrent": 6,
+    "idealRangeKm": 7,
+    "idealAddedKm": 8,
+    "chargeToMaxRange": 9,
+    "chargeRateKm": 10,
+    "insideDegC": 11,
+    "outsideDegC": 12,
+    "driverSettingDegC": 13,
+    "passengerSettingDegC": 14,
+    "acStateOn": 15
   },
   "resources": {
     "media": [
@@ -61,5 +63,9 @@
           "type": "png"
       }
     ]
-  }
+  },
+  "targetPlatforms": [
+    "aplite","basalt"
+  ],
+  "sdkVersion": "3"
 }
