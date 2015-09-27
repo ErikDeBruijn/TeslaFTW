@@ -54,6 +54,11 @@
         "type": "png",
         "name": "IMAGE_MENU_ICON_4",
         "file": "images/menu_icon_temp2.png"
+      },
+      {
+          "file": "images/Big-t.png",
+          "name": "tesla_logo",
+          "type": "png"
       }
     ]
   }

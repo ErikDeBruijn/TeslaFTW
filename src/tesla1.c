@@ -1,4 +1,5 @@
 #include "pebble.h"
+#include "splash.h"
 
 #define NUM_MENU_SECTIONS 3
 #define NUM_FIRST_MENU_ITEMS 2
@@ -126,6 +127,7 @@ static void menu3_select_callback(int index, void *ctx) {
 static void window_load(Window *window) {
   // We'll have to load the icon before we can use it
   sendAppActive();
+  show_splash();
 
   // Although we already defined NUM_FIRST_MENU_ITEMS, you can define
   // an int as such to easily change the order of menu items later
