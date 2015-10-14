@@ -30,26 +30,22 @@ The easiest way is to use the new Pebble Store, from the Pebble App.
 
 Android:
 
- - Run the Pebble App. It will ask you to sign up for a Pebble account.
- - Allow it to install the latest Pebble firmware on your pebble (v2.0.1 or later).
+ - Run the Pebble (Time) App.
  - Choose "Get Apps" in the Pebble App to enter the "Pebble Store"
- - Search "Tesla" in the Pebble Store to find the WatchApp. Click add/get/install.
- - If the above doesn't work, use the PBW: Download the PBW file to your paired phone [here](https://github.com/ErikDeBruijn/TeslaFTW/blob/master/build/TeslaFTW.pbw?raw=true).
+ - Search "Tesla" in the Pebble Store and select TeslaFTW.
  - Your watch will now have the Tesla app. It will ask you to configure it on the phone.
  - From the Phone app, go into "My Pebble". Tap the "Settings" button under the Tesla App icon.
  - Then, enter the login of your Tesla account and your preferences.
- - Go into the Tesla WatchApp from the main menu. The first time takes longer, it needs to find your vehicle.
+ - Go into the Tesla WatchApp from the main menu. The first time takes longer, it needs to find your vehicle. After that it will remember it.
  - Now you can use the app!
 
 iPhone:
 
 Note that iPhone support is untested as I don't have an iPhone.
 
- - Find the new Pebble App (v2) in the App store.
- - Run the new Pebble App. It will ask you to sign up for a Pebble account.
- - Allow it to install the latest Pebble firmware v2 on your pebble.
+ - Run the Pebble (Time) App.
  - Choose "Get Apps" in the Pebble App to enter the "Pebble Store"
- - Search "Tesla" in the Pebble Store to find the WatchApp. Click add/get/install.
+ - Search "Tesla" in the Pebble Store and select TeslaFTW.
  - Your watch will now have the Tesla app. It will ask you to configure it on the phone.
  - From the Phone app, go into "My Pebble". Tap the "Settings" button under the Tesla App icon.
  - Then, enter the login of your Tesla account and your preferences.
@@ -64,11 +60,11 @@ Using this application is entirely at your own risk. No guarantee is given I use
 Compatibility
 =============
 
- - Pebble firmware 2.0.1. Pebble Time.
+ - Pebble firmware 2.0.1 and later. Pebble Time.
  - Android: PebbleApp 2.0 Beta 10 or later.
  - iPhone might not be working at the moment, I can't test this because I only have an Android Phone.
 
-The app doesn't require a companion app on your Android/iOS device, but needs a recent PebbleApp.
+The app doesn't require a companion app on your Android/iOS device, but needs a recent Pebble (Time) App on the phone.
 
 Development
 ===========
