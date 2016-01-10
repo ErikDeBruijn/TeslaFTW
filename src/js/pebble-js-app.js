@@ -1,11 +1,13 @@
 /*
 IDEAS: Shake to refresh range/climate?
-
+FIXME:
+ - reuse access token for as longs as possible (localStorage.getItem('access_token_expires_at'))
+ - 
 */
 var access_token;
 var TESLA_CLIENT_ID='e4a9949fcfa04068f59abb5a658f2bac0a3428e4652315490b659d5ab3f35a9e';
 var TESLA_CLIENT_SECRET='c75f14bbadc8bee3a7594412c31416f8300256d7668ea7e6e7f06727bfb9d220';
-
+var configUrl = 'https://www.googledrive.com/host/0B0nsQz4reBoKQm9RVks5eG5pUkU';
 var debug = localStorage.getItem('debug') || false; 
 var vehicleID = localStorage.getItem('vehicleID') || null;
 var retries = 3;
@@ -32,8 +34,7 @@ Pebble.addEventListener("ready",
 		settings.currency_unit = settingStore.unitOfCurrency;
 		settings.temperature_unit = (settings.distance_unit == 'km' ? 'C' : 'F');
 		settings.kwh_cost = (0+settingStore.kwhCost) || 0.30;
-//		portal = settingStore.APIURL || 'https://portal.vn.teslamotors.com';
-		// portal = 'https://owner-api.teslamotors.com';
+		if(settingStore.APIURL) portal = settingStore.APIURL;
         console.log("Username: "+settingStore.username + ", password: "+settingStore.password + ", vehicleID: "+vehicleID + ", debug: "+debug);
 		console.log("Settings:" + JSON.stringify(settings));
 
@@ -51,8 +52,6 @@ Pebble.addEventListener("ready",
         },1000);
     }
 );
-
-// setInterval(function(){window.batteryPercInt--;},1000);
 
 function appmessage(e) {
     console.log("Received msg: ");
@@ -190,7 +189,10 @@ function doLogin(actions) {
 				if (typeof data != "object") return cb(new Error('expecting a JSON object from Tesla Motors cloud service'));
 				console.log(data);
 				access_token = data.access_token;
-				console.log('access_token' + access_token);
+				current_unixtime = Math.floor(Date.now() / 1000);
+				localStorage.setItem('access_token_expires_at',data.expires_in + current_unixtime);
+				localStorage.setItem('access_token',data.access_token);
+				console.log('access_token ' + access_token);
 				Pebble.sendAppMessage({"99":"Success!!"});
 				performActions(actions); // perform remaining actions
 			} else {
@@ -260,7 +262,6 @@ function getChargedState(actions) {
 	}
 
 	var req = new XMLHttpRequest();
-	// var url = portal +'/api/1/vehicles/29990376295568339/data_request/charge_state';
 	var url = portal +'/api/1/vehicles/'+vehicleID+'/data_request/charge_state';
 	console.log("GET "+url);
 	req.open('GET', url, true);
@@ -284,12 +285,12 @@ function getChargedState(actions) {
 					theData = data[0];
 					if(!passiveRequest) // Don't show popup if its not a GUI initiated request.
 						showChargedState(data);
-
-					Pebble.sendAppMessage({ "batteryPerc": makeChargeTxtMini(chargeData) + "" },connectOkHandler,connectFailHandler);
+					if(typeof chargeData == "object")
+						Pebble.sendAppMessage({ "batteryPerc": makeChargeTxtMini(chargeData) + "" },connectOkHandler,connectFailHandler);
 					performActions(actions); // perform remaining actions
 				}
 			} else {
-				console.log("Failed.\n");
+				console.log("Failed.\n"+this.getAllResponseHeaders());
 				Pebble.sendAppMessage({"99":"Failed!!"});
 			}
 		}
@@ -344,7 +345,6 @@ function getClimateState(actions) {
 	}
 
 	var req = new XMLHttpRequest();
-	// var url = portal+'https://owner-api.teslamotors.com/api/1/vehicles/29990376295568339/data_request/climate_state';
 	var url = portal+'/api/1/vehicles/'+vehicleID+'/data_request/climate_state';
 	req.open('GET', url, true);
 	req.setRequestHeader('Authorization','Bearer '+access_token);
@@ -364,8 +364,8 @@ function getClimateState(actions) {
 							"In/Outside: " + (climateData.inside_temp ? climateData.inside_temp : "???") + "/" +(climateData.outside_temp ? climateData.outside_temp : "???")+ settings.temperature_unit + "\n"
 						);
 					} 
-					// Pebble.sendAppMessage({ "insideDegC": climateData.inside_temp+"C / "+climateData.outside_temp+"C" },connectOkHandler,connectFailHandler);
-					Pebble.sendAppMessage({ "interiorTemp": data.inside_temp + "/" + data.outside_temp },connectOkHandler,connectFailHandler);
+					if(typeof climateData == "object")
+						Pebble.sendAppMessage({ "interiorTemp": climateData.inside_temp + "/" + climateData.outside_temp },connectOkHandler,connectFailHandler);
 					performActions(actions); // perform remaining actions
 				}
 			} else {
@@ -422,7 +422,7 @@ function performCommand(action,actions) {
 				}
 
 			} else {
-				console.log("Failed.\n");
+				console.log("Failed.\n"+this.getAllResponseHeaders());
 				Pebble.sendAppMessage({"99":"Failed!!"});
 			}
 		}
@@ -439,7 +439,7 @@ function connectFailHandler(e) {
 
 function showConfiguration(e) {
 	console.log("Configuration menu....");
-	Pebble.openURL('https://dl.dropboxusercontent.com/u/7326702/Do-not-delete/pebbleconf1.html?name='+settingStore.username);
+	Pebble.openURL(configUrl);
 }
 function webviewclosed(e) {
     console.log("Configuration window returned: " + e.response);
