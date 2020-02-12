@@ -75,5 +75,3 @@ Wishlist:
 
  - Stability in general
  - Lots of testing on more pebbles with more phones. Only used my own Android with a 'regular' black Pebble.
- - For one, it should be easier to set up for a new user. E.g. it should tell you to go to settings in the App when unconfigured.
- - Allow you to set up miles instead of kilometers, and other currencies (for charging cost calculation)
