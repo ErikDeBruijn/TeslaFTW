@@ -1,7 +1,7 @@
 TeslaFTW
 ========
 
-Pebble App to control your Tesla Model S/X or hopefully soon the Model III (economy).
+Pebble App to control your Tesla Model S/3/X/Y.
 
 Click below for a demo video:
 
@@ -13,7 +13,7 @@ Some screenshots:
 
 It uses the Tesla API to control your Tesla. It will allow you to do things like the following:
 
- - Turn on/off A/C (or car pre-heating in winter)
+ - Turn on/off A/C or car (battery) pre-heating in winter
  - See indoor and outdoor temperature
  - Start/stop charging
  - See battery status, possible range and charge rate + cost information
@@ -26,7 +26,7 @@ The functions are ordered so that the menu's at the top are the things I use mos
 Installation
 ============
 
-The easiest way is to use the new Pebble Store, from the Pebble App.
+The easiest way is to use the Pebble Store, from the Pebble App.
 
 Android:
 
@@ -62,7 +62,7 @@ Compatibility
 
  - Pebble firmware 2.0.1 and later. Pebble Time.
  - Android: PebbleApp 2.0 Beta 10 or later.
- - iPhone might not be working at the moment, I can't test this because I only have an Android Phone.
+ - iOS might not be working at the moment, I can't test this because I only have an Android phone.
 
 The app doesn't require a companion app on your Android/iOS device, but needs a recent Pebble (Time) App on the phone.
 
